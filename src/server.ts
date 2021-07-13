@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes';
 
@@ -14,7 +15,14 @@ const app = express();
 // middlewares
 app.use(morgan('dev'));
 app.use(express.json({ limit: '2mb' }));
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    credentials: true,
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200,
+  })
+);
 
 // routes middleware
 app.use('/api/auth', authRoutes);

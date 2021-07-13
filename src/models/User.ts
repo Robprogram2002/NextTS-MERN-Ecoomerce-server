@@ -1,5 +1,16 @@
 import { Schema, model } from 'mongoose';
 
+interface UserInterface {
+  usrename: string;
+  email: string;
+  photoUrl: string;
+  role: string;
+  cart: any[];
+  address: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const userSchema = new Schema(
   {
     username: {
@@ -11,6 +22,11 @@ const userSchema = new Schema(
       required: true,
       index: true,
       unique: true,
+    },
+    photoUrl: {
+      type: String,
+      default:
+        'https://thumbs.dreamstime.com/z/default-avatar-profile-icon-vector-social-media-user-portrait-176256935.jpg',
     },
     role: {
       type: String,
@@ -26,4 +42,4 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-export default model('User', userSchema);
+export default model<UserInterface>('User', userSchema);
