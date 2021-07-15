@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(
 
 // routes middleware
 app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.use((error: Error, req: Request, res: Response) => {
   // const status = error.status || 500;
