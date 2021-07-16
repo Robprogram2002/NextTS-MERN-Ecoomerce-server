@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import subRoutes from './routes/subRoutes';
+import productRoutes from './routes/productRoutes';
+import imageRoutes from './routes/imageRoutes';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ app.use(
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/subs', subRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/images', imageRoutes);
 
 app.use((error: Error, req: Request, res: Response) => {
   // const status = error.status || 500;
