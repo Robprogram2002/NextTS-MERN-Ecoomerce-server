@@ -44,7 +44,7 @@ export const update = async (
   const { name } = req.body;
   try {
     const updated = await Category.findOne({ slug: req.params.slug });
-        
+
     updated.set('name', name);
     updated.set('slug', slugify(name));
 
