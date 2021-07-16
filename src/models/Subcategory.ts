@@ -1,13 +1,14 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-interface CategoryTypes {
+interface SubCategoryInterface {
   name: string;
   slug: string;
+  parent: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const categorySchema = new mongoose.Schema(
+const subSchema = new Schema(
   {
     name: {
       type: String,
@@ -22,8 +23,9 @@ const categorySchema = new mongoose.Schema(
       lowercase: true,
       index: true,
     },
+    parent: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
   },
   { timestamps: true }
 );
 
-export default mongoose.model<CategoryTypes>('Category', categorySchema);
+export default model<SubCategoryInterface>('Sub', subSchema);
