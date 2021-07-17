@@ -11,12 +11,14 @@ import {
   remove,
   read,
   update,
+  selectedProductsHandler,
 } from '../controllers/productController';
 
 const router = Router();
 
 // routes
 router.post('/create', isAuth, isAdmin, create);
+router.get('/selected', selectedProductsHandler);
 router.get('/list/:count', listAll); // products/100
 router.delete('/remove/:slug', isAuth, isAdmin, remove);
 router.get('/:slug', read);

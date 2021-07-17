@@ -9,7 +9,6 @@ export const create = async (
 ) => {
   try {
     req.body.slug = slugify(req.body.title);
-    console.log(req.body);
 
     const newProduct = await new Product(req.body).save();
     res.status(200).json(newProduct);
@@ -115,7 +114,37 @@ export const update = async (
 
     res.status(200).json(product);
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
+
+export const selectedProductsHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // createdAt/updatedAt, desc/asc, 3
+    const { sort, order, page } = req.query;
+    const currentPage = +page || 1;
+    const perPage = 3; // 3
+
+    const products = await Product.find({})
+      .skip((currentPage - 1) * perPage)
+      .populate('category')
+      .populate('subs')
+      .sort([[sort, order]])
+      .limit(perPage)
+      .lean()
+      .exec();
+
+    res.status(200).json(products);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// exports.productsCount = async (req, res) => {
+//   let total = await Product.find({}).estimatedDocumentCount().exec();
+//   res.json(total);
+// };
