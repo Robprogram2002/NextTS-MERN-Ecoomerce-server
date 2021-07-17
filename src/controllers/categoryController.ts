@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
 import Category from '../models/Category';
+import SubCategory from '../models/Subcategory';
 
 export const create = async (
   req: Request,
@@ -67,5 +68,19 @@ export const remove = async (
     res.status(200).json({ message: 'category deleted' });
   } catch (err) {
     next(err);
+  }
+};
+
+export const getSubcategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { _id } = req.params;
+    const subcategories = await SubCategory.find({ parent: _id });
+    res.status(200).json(subcategories);
+  } catch (error) {
+    next(error);
   }
 };

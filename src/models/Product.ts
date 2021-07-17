@@ -44,7 +44,7 @@ const productSchema = new Schema(
       type: String,
       trim: true,
       required: true,
-      maxlength: 32,
+      maxlength: 50,
       text: true,
     },
     slug: {

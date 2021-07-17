@@ -9,6 +9,8 @@ export const create = async (
 ) => {
   try {
     req.body.slug = slugify(req.body.title);
+    console.log(req.body);
+
     const newProduct = await new Product(req.body).save();
     res.status(200).json(newProduct);
   } catch (err) {
@@ -79,12 +81,41 @@ export const update = async (
       req.body.slug = slugify(req.body.title);
     }
 
-    const productUpdated = await Product.findOne({ slug: req.params.slug });
-    productUpdated.set('name', req.body.name);
-    await productUpdated.save();
+    const {
+      name,
+      title,
+      images,
+      description,
+      color,
+      brand,
+      price,
+      shipping,
+      quantity,
+      category,
+      subs,
+    } = req.body;
 
-    res.status(200).json(productUpdated);
+    const product = await Product.findOne({ slug: req.params.slug });
+    product.set('name', name);
+    product.set('title', title);
+    if (req.body.images) {
+      product.set('images', images);
+    }
+    product.set('description', description);
+    product.set('slug', req.body.slug);
+    product.set('color', color);
+    product.set('brand', brand);
+    product.set('price', price);
+    product.set('shipping', shipping);
+    product.set('quantity', quantity);
+    product.set('category', category);
+    product.set('subs', subs);
+
+    await product.save();
+
+    res.status(200).json(product);
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
