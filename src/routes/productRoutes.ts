@@ -12,6 +12,8 @@ import {
   read,
   update,
   selectedProductsHandler,
+  getRelatedProducts,
+  rateProductHandler,
 } from '../controllers/productController';
 
 const router = Router();
@@ -21,7 +23,9 @@ router.post('/create', isAuth, isAdmin, create);
 router.get('/selected', selectedProductsHandler);
 router.get('/list/:count', listAll); // products/100
 router.delete('/remove/:slug', isAuth, isAdmin, remove);
-router.get('/:slug', read);
 router.put('/update/:slug', isAuth, isAdmin, update);
+router.patch('/rate/:productId', isAuth, rateProductHandler);
+router.get('/:slug', read);
+router.get('/:productId/relates', getRelatedProducts);
 
 export default router;

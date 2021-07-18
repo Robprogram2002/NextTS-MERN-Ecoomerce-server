@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-interface UserInterface {
+export interface UserInterface {
   usrename: string;
   email: string;
   photoUrl: string;
@@ -9,6 +9,7 @@ interface UserInterface {
   address: string;
   createdAt: Date;
   updatedAt: Date;
+  _id: string;
 }
 
 const userSchema = new Schema(

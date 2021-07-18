@@ -1,5 +1,7 @@
+/* eslint-disable no-underscore-dangle */
 import { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
+import { UserInterface } from '../models/User';
 import Product from '../models/Product';
 
 export const create = async (
@@ -148,3 +150,77 @@ export const selectedProductsHandler = async (
 //   let total = await Product.find({}).estimatedDocumentCount().exec();
 //   res.json(total);
 // };
+
+export const rateProductHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log('hereee');
+
+    const authUser: UserInterface = res.locals.user;
+    const { productId } = req.params;
+    const { star } = req.body;
+
+    const product = await Product.findById(productId).exec();
+
+    // who is updating?
+    // check if currently logged in user have already added rating to this product?
+    const existingRatingObject = product.ratings.find(
+      (ele) => ele.postedBy.toString() === authUser._id.toString()
+    );
+    // if user haven't left rating yet, push it
+    if (existingRatingObject === undefined) {
+      product.set('ratings', [
+        ...product.ratings,
+        { star, postedBy: authUser._id },
+      ]);
+      await product.save();
+
+      res.status(200).json(product);
+    } else {
+      // if user have already left rating, update it
+      const ratingUpdated = await Product.updateOne(
+        {
+          ratings: { $elemMatch: existingRatingObject },
+        },
+        { $set: { 'ratings.$.star': star } },
+        { new: true }
+      ).exec();
+
+      res.status(200).json(ratingUpdated);
+    }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const getRelatedProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const product = await Product.findById(req.params.productId)
+      .select(['category', '_id'])
+      .lean()
+      .exec();
+
+    const related = await Product.find({
+      _id: { $ne: product._id },
+      category: product.category,
+    })
+      .limit(3)
+      .populate('category')
+      .populate('subs')
+      .populate('postedBy')
+      .lean()
+      .exec();
+
+    res.status(200).json(related);
+  } catch (error) {
+    next(error);
+  }
+};

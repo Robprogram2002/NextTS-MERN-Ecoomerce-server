@@ -22,6 +22,7 @@ export const brands_array = ['Apple', 'Samsung', 'Microsoft', 'Lenovo', 'ASUS'];
 export const colors_array = ['Black', 'Brown', 'Silver', 'White', 'Blue'];
 
 interface ProductInterface {
+  _id: string;
   title: string;
   slug: string;
   description: string;
@@ -34,6 +35,12 @@ interface ProductInterface {
   shipping: 'Yes' | 'No';
   color: Colors;
   brand: Brands;
+  ratings: [
+    {
+      star: number;
+      postedBy: string;
+    }
+  ];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,12 +102,12 @@ const productSchema = new Schema(
       type: String,
       enum: brands_array,
     },
-    // ratings: [
-    //   {
-    //     star: Number,
-    //     postedBy: { type: ObjectId, ref: "User" },
-    //   },
-    // ],
+    ratings: [
+      {
+        star: Number,
+        postedBy: { type: ObjectId, ref: 'User' },
+      },
+    ],
   },
   { timestamps: true }
 );
