@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
+import Product from '../models/Product';
 import Subcategory from '../models/Subcategory';
 
 export const create = async (
@@ -70,5 +71,25 @@ export const remove = async (
     res.status(200).json({ message: 'Sub category removed correctly' });
   } catch (err) {
     next(err);
+  }
+};
+
+export const getProductsBySub = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+
+    const sub = await Subcategory.findOne({ slug })
+      .select(['_id', 'name'])
+      .lean();
+
+    const products = await Product.find({ subs: sub._id }).lean();
+
+    res.status(200).json({ products, sub });
+  } catch (error) {
+    next(error);
   }
 };

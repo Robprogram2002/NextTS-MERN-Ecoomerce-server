@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import slugify from 'slugify';
+import Product from '../models/Product';
 import Category from '../models/Category';
 import SubCategory from '../models/Subcategory';
 
@@ -80,6 +81,26 @@ export const getSubcategories = async (
     const { _id } = req.params;
     const subcategories = await SubCategory.find({ parent: _id });
     res.status(200).json(subcategories);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductsByCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug })
+      .select(['_id', 'name'])
+      .lean();
+    const products = await Product.find({ category: category._id })
+      .populate('category')
+      .lean();
+
+    res.status(200).json(products);
   } catch (error) {
     next(error);
   }

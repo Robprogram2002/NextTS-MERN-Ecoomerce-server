@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 interface SubCategoryInterface {
+  _id: string;
   name: string;
   slug: string;
   parent: string;

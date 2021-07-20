@@ -4,6 +4,7 @@ interface CategoryTypes {
   name: string;
   slug: string;
   createdAt: Date;
+  _id: string;
   updatedAt: Date;
 }
 

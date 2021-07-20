@@ -14,6 +14,7 @@ import {
   selectedProductsHandler,
   getRelatedProducts,
   rateProductHandler,
+  searchFilters,
 } from '../controllers/productController';
 
 const router = Router();
@@ -27,5 +28,6 @@ router.put('/update/:slug', isAuth, isAdmin, update);
 router.patch('/rate/:productId', isAuth, rateProductHandler);
 router.get('/:slug', read);
 router.get('/:productId/relates', getRelatedProducts);
+router.post('/search/filters', searchFilters);
 
 export default router;

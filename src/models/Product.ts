@@ -2,24 +2,8 @@ import { Schema, model } from 'mongoose';
 
 const { ObjectId } = Schema.Types;
 
-enum Colors {
-  'Black',
-  'Brown',
-  'Silver',
-  'White',
-  'Blue',
-}
-
-enum Brands {
-  'Apple',
-  'Samsung',
-  'Microsoft',
-  'Lenovo',
-  'ASUS',
-}
-
-export const brands_array = ['Apple', 'Samsung', 'Microsoft', 'Lenovo', 'ASUS'];
-export const colors_array = ['Black', 'Brown', 'Silver', 'White', 'Blue'];
+export const brandsArray = ['Apple', 'Samsung', 'Microsoft', 'Lenovo', 'ASUS'];
+export const colorsArray = ['Black', 'Brown', 'Silver', 'White', 'Blue'];
 
 interface ProductInterface {
   _id: string;
@@ -32,9 +16,9 @@ interface ProductInterface {
   quantity: number;
   sold: number;
   images: string[];
-  shipping: 'Yes' | 'No';
-  color: Colors;
-  brand: Brands;
+  shipping: string;
+  color: string;
+  brand: string;
   ratings: [
     {
       star: number;
@@ -96,11 +80,11 @@ const productSchema = new Schema(
     },
     color: {
       type: String,
-      enum: colors_array,
+      enum: colorsArray,
     },
     brand: {
       type: String,
-      enum: brands_array,
+      enum: brandsArray,
     },
     ratings: [
       {

@@ -12,6 +12,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "no-underscore-dangle": "off",
     "no-console": 1,
     "import/extensions": [
       "error",
