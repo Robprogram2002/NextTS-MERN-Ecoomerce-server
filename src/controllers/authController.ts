@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import cookie from 'cookie';
-import User from '../models/User';
+import User, { UserInterface } from '../models/User';
 import admin from '../firebase';
+import Order from '../models/Order';
 
 export const signUpHandler = async (
   req: Request,
@@ -20,6 +21,11 @@ export const signUpHandler = async (
     await User.create({
       username,
       email,
+      cart: {
+        products: [],
+        totalAmount: 0,
+        appliedCoupon: false,
+      },
     });
 
     res.status(200).json({ message: 'user sign up successfully' });
@@ -42,11 +48,20 @@ export const signinHandler = async (
     let user = await User.findOne({ email: firebaseUser.email });
 
     if (!user) {
-      user = await User.create({
+      user = new User({
         email: firebaseUser.email,
         username: firebaseUser.name,
         photoUrl: firebaseUser.picture,
       });
+
+      user.cart = {
+        products: [],
+        totalAmount: 0,
+        appliedCoupon: false,
+      };
+
+      await user.save();
+      console.log(user);
     }
 
     res.set(
@@ -95,4 +110,23 @@ export const logoutRequest = async (req: Request, res: Response) => {
   );
 
   res.status(200).json({ message: 'user logout correctly' });
+};
+
+export const listUserOrders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const authUser: UserInterface = res.locals.user;
+
+  try {
+    const userOrders = await Order.find({ orderedBy: authUser._id })
+      .populate('products.product')
+      .lean()
+      .exec();
+
+    res.status(200).json(userOrders);
+  } catch (error) {
+    next(error);
+  }
 };

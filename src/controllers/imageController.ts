@@ -1,11 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import cloudinary from 'cloudinary';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // config
 cloudinary.v2.config({
-  cloud_name: 'dhpjmkudq',
-  api_key: '584216791199933',
-  api_secret: 'oSSoh3Wmc9MhDpuCOodnHwl_KbI',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
 

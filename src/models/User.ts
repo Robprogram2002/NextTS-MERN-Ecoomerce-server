@@ -1,11 +1,22 @@
 import { Schema, model } from 'mongoose';
+import { ProductInterface } from './Product';
+
+const { ObjectId } = Schema.Types;
 
 export interface UserInterface {
   usrename: string;
   email: string;
   photoUrl: string;
   role: string;
-  cart: any[];
+  cart: {
+    products: {
+      product: any;
+      count: number;
+      color: string;
+    }[];
+    totalAmount: number;
+    appliedCoupon: Boolean;
+  };
   address: string;
   createdAt: Date;
   updatedAt: Date;
@@ -33,11 +44,21 @@ const userSchema = new Schema(
       type: String,
       default: 'subscriber',
     },
-    cart: {
-      type: Array,
-      default: [],
-    },
     address: String,
+    cart: {
+      products: [
+        {
+          product: {
+            type: ObjectId,
+            ref: 'Product',
+          },
+          count: Number,
+          color: String,
+        },
+      ],
+      totalAmount: Schema.Types.Number,
+      appliedCoupon: Schema.Types.Boolean,
+    },
     //   wishlist: [{ type: ObjectId, ref: "Product" }],
   },
   { timestamps: true }

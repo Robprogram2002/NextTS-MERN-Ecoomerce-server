@@ -10,6 +10,8 @@ import categoryRoutes from './routes/categoryRoutes';
 import subRoutes from './routes/subRoutes';
 import productRoutes from './routes/productRoutes';
 import imageRoutes from './routes/imageRoutes';
+import cartRoutes from './routes/cartRoutes';
+import couponRoutes from './routes/couponRoutes';
 
 dotenv.config();
 
@@ -34,7 +36,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/subs', subRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/images', imageRoutes);
-
+app.use('/api/user/cart', cartRoutes);
+app.use('/api/coupons', couponRoutes);
 app.use((error: Error, req: Request, res: Response) => {
   // const status = error.status || 500;
   const message = error.message || 'something went wrong';

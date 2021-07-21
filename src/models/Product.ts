@@ -5,7 +5,7 @@ const { ObjectId } = Schema.Types;
 export const brandsArray = ['Apple', 'Samsung', 'Microsoft', 'Lenovo', 'ASUS'];
 export const colorsArray = ['Black', 'Brown', 'Silver', 'White', 'Blue'];
 
-interface ProductInterface {
+export interface ProductInterface {
   _id: string;
   title: string;
   slug: string;
