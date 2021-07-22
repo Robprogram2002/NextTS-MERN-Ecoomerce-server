@@ -1,5 +1,4 @@
 import { Schema, model } from 'mongoose';
-import { ProductInterface } from './Product';
 
 const { ObjectId } = Schema.Types;
 

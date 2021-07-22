@@ -1,10 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import Order from '../models/Order';
 import Coupon from '../models/Coupon';
 import Product, { ProductInterface } from '../models/Product';
 import User, { UserInterface } from '../models/User';
+import errorHandler from '../utils/ErrorHandler';
 
 dotenv.config();
 
@@ -12,11 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET, {
   apiVersion: '2020-08-27',
 });
 
-export const addProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const addProduct = async (req: Request, res: Response) => {
   const { product }: { product: ProductInterface } = req.body;
   const authUser: UserInterface = res.locals.user;
   try {
@@ -54,15 +51,11 @@ export const addProduct = async (
 
     res.status(200).json(newCart);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const changeProductCount = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const changeProductCount = async (req: Request, res: Response) => {
   const { productId, count } = req.body;
   const authUser: UserInterface = res.locals.user;
   const newCart = { ...authUser.cart };
@@ -114,15 +107,11 @@ export const changeProductCount = async (
 
     res.status(200).json(newCart);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const removeProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const removeProduct = async (req: Request, res: Response) => {
   const { productId } = req.body;
   try {
     const authUser: UserInterface = res.locals.user;
@@ -151,15 +140,11 @@ export const removeProduct = async (
 
     res.status(200).json(newCart);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const changeProductColor = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const changeProductColor = async (req: Request, res: Response) => {
   const { productId, color } = req.body;
 
   try {
@@ -184,15 +169,11 @@ export const changeProductColor = async (
 
     res.status(200).json(newCart);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const getUserCart = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getUserCart = async (req: Request, res: Response) => {
   try {
     const authUser: UserInterface = res.locals.user;
 
@@ -213,15 +194,11 @@ export const getUserCart = async (
 
     res.status(200).json(result);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const emptyCart = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const emptyCart = async (req: Request, res: Response) => {
   const authUser = res.locals.user;
 
   try {
@@ -240,15 +217,11 @@ export const emptyCart = async (
 
     res.status(200).json({ message: 'Cart cleared correctly' });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const saveAddress = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const saveAddress = async (req: Request, res: Response) => {
   try {
     await User.updateOne(
       { _id: res.locals.user._id },
@@ -257,15 +230,11 @@ export const saveAddress = async (
 
     res.status(200).json({ message: 'Address saved correctly' });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const applyCouponToUserCart = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const applyCouponToUserCart = async (req: Request, res: Response) => {
   const { coupon } = req.body;
 
   try {
@@ -285,15 +254,11 @@ export const applyCouponToUserCart = async (
 
     res.status(200).json(totalAfterDiscount);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const createPaymentIntent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createPaymentIntent = async (req: Request, res: Response) => {
   try {
     // const authUser: UserInterface = res.locals.user;
     const { totalAmount, coupon } = req.body;
@@ -344,22 +309,18 @@ export const createPaymentIntent = async (
       });
     }
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const createOrder = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createOrder = async (req: Request, res: Response) => {
   const { paymentIntent } = req.body.stripeResponse;
   const { completeCart } = req.body;
 
   const authUser: UserInterface = res.locals.user;
 
   try {
-    const newOrder = await new Order({
+    await new Order({
       products: completeCart.products,
       paymentIntent,
       orderedBy: authUser._id,
@@ -376,9 +337,8 @@ export const createOrder = async (
     const updated = await Product.bulkWrite(bulkOption, {});
     console.log('PRODUCT QUANTITY-- AND SOLD++', updated);
 
-    console.log('NEW ORDER SAVED', newOrder);
     res.status(200).json({ ok: true });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };

@@ -1,24 +1,32 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import cookie from 'cookie';
+import { validationResult } from 'express-validator';
+import errorHandler from '../utils/ErrorHandler';
+import HttpException from '../utils/HttpException';
 import User, { UserInterface } from '../models/User';
 import admin from '../firebase';
 import Order from '../models/Order';
 
-export const signUpHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { username, email } = req.body;
-
+export const signUpHandler = async (req: Request, res: Response) => {
   try {
-    const isTaken = await User.findOne({ email });
+    const { username, email } = req.body;
+    const errors = validationResult(req);
 
-    if (isTaken) {
-      throw new Error('Adress already taken');
+    if (!errors.isEmpty()) {
+      throw new HttpException(
+        400,
+        'Bad input data',
+        errors.array({ onlyFirstError: true })
+      );
     }
 
-    await User.create({
+    const isTaken = await User.findOne({ email }).select(['_id']).lean();
+
+    if (isTaken) {
+      throw new HttpException(400, 'Adress already taken');
+    }
+
+    await new User({
       username,
       email,
       cart: {
@@ -26,19 +34,15 @@ export const signUpHandler = async (
         totalAmount: 0,
         appliedCoupon: false,
       },
-    });
+    }).save();
 
     res.status(200).json({ message: 'user sign up successfully' });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const signinHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const signinHandler = async (req: Request, res: Response) => {
   try {
     const { authResult }: any = req.body;
     const { token } = authResult;
@@ -61,7 +65,6 @@ export const signinHandler = async (
       };
 
       await user.save();
-      console.log(user);
     }
 
     res.set(
@@ -77,23 +80,19 @@ export const signinHandler = async (
 
     res.status(200).json({ user });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const meRequestHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const meRequestHandler = async (req: Request, res: Response) => {
   try {
     const { user } = res.locals;
 
-    if (!user) throw new Error('Not user authenticated');
+    if (!user) throw new HttpException(401, 'Not user authenticated');
 
     res.status(200).json({ user });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
 
@@ -112,11 +111,7 @@ export const logoutRequest = async (req: Request, res: Response) => {
   res.status(200).json({ message: 'user logout correctly' });
 };
 
-export const listUserOrders = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const listUserOrders = async (req: Request, res: Response) => {
   const authUser: UserInterface = res.locals.user;
 
   try {
@@ -127,6 +122,6 @@ export const listUserOrders = async (
 
     res.status(200).json(userOrders);
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };

@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import cloudinary from 'cloudinary';
 import dotenv from 'dotenv';
+import errorHandler from '../utils/ErrorHandler';
 
 dotenv.config();
 
@@ -13,11 +14,7 @@ cloudinary.v2.config({
 });
 
 // req.files.file.path
-export const upload = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const upload = async (req: Request, res: Response) => {
   try {
     const result = await cloudinary.v2.uploader.upload(req.body.image, {
       public_id: `next-ecomm/products/${Date.now()}`,
@@ -29,12 +26,11 @@ export const upload = async (
       url: result.secure_url,
     });
   } catch (error) {
-    console.log(error);
-    next(error);
+    errorHandler(error, res);
   }
 };
 
-export const remove = (req: Request, res: Response, next: NextFunction) => {
+export const remove = (req: Request, res: Response) => {
   try {
     const { publicId } = req.body;
     cloudinary.v2.uploader.destroy(publicId, (err) => {
@@ -42,6 +38,6 @@ export const remove = (req: Request, res: Response, next: NextFunction) => {
       res.status(200).json({ message: 'Image deleted correctly' });
     });
   } catch (error) {
-    next(error);
+    errorHandler(error, res);
   }
 };
