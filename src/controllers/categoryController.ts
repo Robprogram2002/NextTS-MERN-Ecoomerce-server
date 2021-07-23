@@ -6,6 +6,31 @@ import errorHandler from '../utils/ErrorHandler';
 import Product from '../models/Product';
 import Category from '../models/Category';
 import SubCategory from '../models/Subcategory';
+import cache from '../redisConfig';
+
+const removeCategoryCache = (
+  slug: string | null = null,
+  _id: string | null = null
+) => {
+  cache.del('categories', (err) => {
+    if (err) throw new HttpException(500, 'problems with redis cache');
+  });
+  cache.del('categories-subcategories', (err) => {
+    if (err) throw new HttpException(500, 'problems with redis cache');
+  });
+
+  if (slug) {
+    cache.del(`category-${slug}-products`, (err) => {
+      if (err) throw new HttpException(500, 'problems with redis cache');
+    });
+  }
+
+  if (_id) {
+    cache.del(`category-${_id}-subcategories`, (err) => {
+      if (err) throw new HttpException(500, 'problems with redis cache');
+    });
+  }
+};
 
 export const create = async (req: Request, res: Response) => {
   try {
@@ -21,6 +46,10 @@ export const create = async (req: Request, res: Response) => {
     }
 
     const category = await new Category({ name, slug: slugify(name) }).save();
+
+    // remove the cache for categories red operations
+    removeCategoryCache();
+
     res.status(200).json(category);
   } catch (err) {
     errorHandler(err, res);
@@ -59,6 +88,9 @@ export const update = async (req: Request, res: Response) => {
       { new: true }
     );
 
+    // remove the cache for categories red operations
+    removeCategoryCache(slugify(name));
+
     res.status(200).json(updated);
   } catch (error) {
     errorHandler(error, res);
@@ -67,7 +99,13 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
   try {
-    await Category.deleteOne({ slug: req.params.slug });
+    const { slug } = req.params;
+    const category = await Category.findOne({ slug }).select(['_id']);
+    await category.remove();
+
+    // remove the cache for categories red operations
+    removeCategoryCache(slug, category._id);
+
     res.status(200).json({ message: 'category deleted' });
   } catch (error) {
     errorHandler(error, res);
@@ -97,6 +135,24 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
       .lean();
 
     res.status(200).json(products);
+  } catch (error) {
+    errorHandler(error, res);
+  }
+};
+
+export const getAllHandler = async (req: Request, res: Response) => {
+  try {
+    const categories = await Category.find({}).lean();
+    const subcategories = await SubCategory.find({}).lean();
+
+    if (!categories || !subcategories) {
+      throw new HttpException(500, 'An error was happen, plis try again');
+    }
+
+    res.status(200).json({
+      categories,
+      subcategories,
+    });
   } catch (error) {
     errorHandler(error, res);
   }

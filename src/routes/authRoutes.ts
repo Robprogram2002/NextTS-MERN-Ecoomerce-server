@@ -7,6 +7,7 @@ import {
   meRequestHandler,
   logoutRequest,
 } from '../controllers/authController';
+import cache from '../redisConfig';
 
 const router = Router();
 
@@ -33,7 +34,15 @@ router.post(
   signUpHandler
 );
 router.post('/sign-in', signinHandler);
-router.get('/me', isAuth, meRequestHandler);
+router.get(
+  '/me',
+  isAuth,
+  cache.route({
+    name: 'user-me',
+    expire: 60,
+  }),
+  meRequestHandler
+);
 router.get('/logout', logoutRequest);
 
 export default router;

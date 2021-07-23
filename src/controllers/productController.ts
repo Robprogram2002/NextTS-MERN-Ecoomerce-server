@@ -21,6 +21,7 @@ export const create = async (req: Request, res: Response) => {
     }
 
     const newProduct = await new Product(req.body).save();
+
     res.status(200).json(newProduct);
   } catch (err) {
     errorHandler(err, res);
@@ -114,22 +115,44 @@ export const update = async (req: Request, res: Response) => {
   }
 };
 
+// export const selectedProductsHandler = async (req: Request, res: Response) => {
+//   try {
+//     // createdAt/updatedAt, desc/asc, 3
+//     const { sort, order, page } = req.query;
+//     const currentPage = +page || 1;
+//     const perPage = 4; // 3
+
+//     const products = await Product.find({})
+//       .skip((currentPage - 1) * perPage)
+//       .populate('category')
+//       .populate('subs')
+//       .sort([[sort, order]])
+//       .limit(perPage)
+//       .lean();
+
+//     res.status(200).json(products);
+//   } catch (err) {
+//     errorHandler(err, res);
+//   }
+// };
+
 export const selectedProductsHandler = async (req: Request, res: Response) => {
   try {
-    // createdAt/updatedAt, desc/asc, 3
-    const { sort, order, page } = req.query;
-    const currentPage = +page || 1;
-    const perPage = 3; // 3
-
-    const products = await Product.find({})
-      .skip((currentPage - 1) * perPage)
+    const newests = await Product.find({})
       .populate('category')
       .populate('subs')
-      .sort([[sort, order]])
-      .limit(perPage)
+      .sort([['createdAt', 'desc']])
+      .limit(12)
       .lean();
 
-    res.status(200).json(products);
+    const bestSellers = await Product.find({})
+      .populate('category')
+      .populate('subs')
+      .sort([['sold', 'desc']])
+      .limit(12)
+      .lean();
+
+    res.status(200).json({ newests, bests: bestSellers });
   } catch (err) {
     errorHandler(err, res);
   }
@@ -183,7 +206,8 @@ export const getRelatedProducts = async (
   next: NextFunction
 ) => {
   try {
-    const product = await Product.findById(req.params.productId)
+    const { productId } = req.params;
+    const product = await Product.findOne({ slug: productId })
       .select(['category', '_id'])
       .lean()
       .exec();
@@ -192,12 +216,11 @@ export const getRelatedProducts = async (
       _id: { $ne: product._id },
       category: product.category,
     })
-      .limit(3)
+      .limit(4)
       .populate('category')
       .populate('subs')
       .populate('postedBy')
-      .lean()
-      .exec();
+      .lean();
 
     res.status(200).json(related);
   } catch (error) {

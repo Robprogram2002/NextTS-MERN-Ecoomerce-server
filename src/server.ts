@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -12,7 +12,7 @@ import productRoutes from './routes/productRoutes';
 import imageRoutes from './routes/imageRoutes';
 import cartRoutes from './routes/cartRoutes';
 import couponRoutes from './routes/couponRoutes';
-import HttpException from './utils/HttpException';
+import orderRoutes from './routes/orderRoutes';
 
 dotenv.config();
 
@@ -39,10 +39,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/user/cart', cartRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/orders', orderRoutes);
 
 // catch request made to no ap end point
-app.use('/', () => {
-  throw new HttpException(404, 'Not end point was reached', null);
+app.use('/', (req: Request, res: Response) => {
+  res.status(404).send('sorry, not api end point was reached');
 });
 
 app.listen(process.env.PORT || 5000, () => {

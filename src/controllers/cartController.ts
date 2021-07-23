@@ -6,6 +6,7 @@ import Coupon from '../models/Coupon';
 import Product, { ProductInterface } from '../models/Product';
 import User, { UserInterface } from '../models/User';
 import errorHandler from '../utils/ErrorHandler';
+import cache from '../redisConfig';
 
 dotenv.config();
 
@@ -48,6 +49,9 @@ export const addProduct = async (req: Request, res: Response) => {
         },
       }
     );
+
+    // clear user cache
+    cache.del('user-me', () => {});
 
     res.status(200).json(newCart);
   } catch (error) {

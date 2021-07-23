@@ -5,6 +5,7 @@ import { body } from 'express-validator';
 import { brandsArray, colorsArray } from '../models/Product';
 import isAdmin from '../middlewares/isAdmin';
 import isAuth from '../middlewares/isAuth';
+import cache from '../redisConfig';
 // controller
 import {
   create,
@@ -48,8 +49,19 @@ const productValidator = [
 
 // routes
 router.post('/create', productValidator, isAuth, isAdmin, create);
-router.get('/selected', selectedProductsHandler);
-router.get('/list/:count', listAll); // products/100
+router.get(
+  '/selected',
+  cache.route({
+    expire: 60 * 10,
+    name: 'selected-products',
+  }),
+  selectedProductsHandler
+);
+router.get(
+  '/list/:count',
+  cache.route({ expire: 60, name: 'list-all-products' }),
+  listAll
+); // products/100
 router.delete('/remove/:slug', isAuth, isAdmin, remove);
 router.put('/update/:slug', productValidator, isAuth, isAdmin, update);
 router.patch(
@@ -63,7 +75,18 @@ router.patch(
   isAuth,
   rateProductHandler
 );
-router.get('/:slug', read);
+router.get(
+  '/:slug',
+
+  // middleware to define cache name
+  (req, res, next) => {
+    // set cache name
+    res.express_redis_cache_name = `product-${req.params.slug}`;
+    next();
+  },
+  cache.route({ expire: 60 * 2 }),
+  read
+);
 router.get('/:productId/relates', getRelatedProducts);
 router.post('/search/filters', searchFilters);
 

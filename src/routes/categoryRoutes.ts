@@ -8,10 +8,12 @@ import {
   list,
   getSubcategories,
   getProductsByCategory,
+  getAllHandler,
 } from '../controllers/categoryController';
 
 import isAuth from '../middlewares/isAuth';
 import isAdmin from '../middlewares/isAdmin';
+import cache from '../redisConfig';
 
 const router = Router();
 const categoryValidator = [
@@ -22,11 +24,32 @@ const categoryValidator = [
 ];
 
 // routes
-router.post('/create', categoryValidator, isAuth, isAdmin, create);
-router.get('/list', list);
+router.post('/create', categoryValidator, create);
+router.get('/all', cache.route('categories-subcategories'), getAllHandler);
+router.get('/list', cache.route('categories'), list);
 router.get('/:slug', read);
-router.get('/:slug/products', getProductsByCategory);
-router.get('/:_id/subs', getSubcategories);
+router.get(
+  '/:slug/products',
+  // middleware to define cache name
+  (req, res, next) => {
+    // set cache name
+    res.express_redis_cache_name = `category-${req.params.slug}-products`;
+    next();
+  },
+  cache.route({ expire: 60 }),
+  getProductsByCategory
+);
+router.get(
+  '/:_id/subs',
+  // middleware to define cache name
+  (req, res, next) => {
+    // set cache name
+    res.express_redis_cache_name = `category-${req.params._id}-subcategories`;
+    next();
+  },
+  cache.route(),
+  getSubcategories
+);
 router.put('/update/:slug', categoryValidator, isAuth, isAdmin, update);
 router.delete('/delete/:slug', isAuth, isAdmin, remove);
 
